@@ -1,0 +1,4 @@
+open-ai:
+  model: gpt-3.5-turbo
+  scheme: https://api.openai.com
+  key: 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

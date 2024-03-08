@@ -1,0 +1,123 @@
+/*
+ * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+
+
+import cz.utb.fai.model.dto.StartupValuationRes
+import cz.utb.fai.model.type.Evidence
+import cz.utb.fai.model.type.Fact
+import cz.utb.fai.model.type.Hypothesis
+import java.util.ArrayList
+import java.util.List
+import java.util.Arrays
+import java.util.Collections
+import cz.utb.fai.drools.TrackingAgendaEventListener
+import cz.utb.fai.model.type.Skills
+
+global StartupValuationRes response
+global TrackingAgendaEventListener listener
+
+
+rule "Business Needs"
+salience 100
+when
+    Evidence(description == "Do you know what your business needs?", value == "no")
+then
+    // Trigger actions based on the evidence
+    // Insert or assert a fact indicating the need for further analysis
+    insertLogical(new Fact("Your business needs further analysis"));
+end
+
+rule "Business Needs - No" //noBusinessNeeds
+salience 90
+when
+    $f : Fact(description == "Your business needs further analysis")
+    $e: Evidence(description == "What is your PRL? [value 1-4]", value == $value : value)
+then
+    double rate = listener.adjustProductScore($value);
+    // Create final rule fact with description
+    Fact fact = new Fact("You current success probability based on PRL is " + rate);
+
+    response.setRate(rate);
+    response.setExplanation(Arrays.asList($f.getDescription(), fact.getDescription()));
+//    synchronized (response) {
+//        listener.updateResponse(response, rate, Arrays.asList($f.getDescription(), fact.getDescription()));
+//    }
+end
+
+
+rule "Business Needs - Yes" //BusinessNeeds
+salience 99
+when
+    Evidence(description == "Do you know what your business needs?", value == "yes")
+then
+    insert(new Hypothesis("Considering Frame Team."));
+end
+
+/*
+rule "Frame: Team" //team
+ruleflow-group "team"   //TODO
+salience 90
+when
+    exists(Hypothesis("Considering Frame Team."))
+    $ms: Evidence(description == "Do you have the marketing skills?", value == $ms : value )
+    $ts: Evidence(description == "Do you have the technical skills?", value == $ts : value )
+    $as: Evidence(description == "Do you have the analytical skills?", value == $as : value )
+
+then
+    response.setExplanation(Arrays.asList("FRAME TEAM"));
+end
+*/
+
+//rule "Marketing skill" //MarketingSkills
+//salience 98
+//when
+//    exists(Hypothesis(description == "Considering Frame Team."))
+//    Evidence(description == "Do you have the marketing skills?", value == $ms : value )
+//then
+//    double rate = $ms.equals("yes") ? Skills.MARKETING_SKILLS : Skills.NO_SKILL;
+//    Fact f = new Fact("Marketing skills is " + rate);
+//    insert(f);
+//    synchronized (response) {
+//        listener.updateResponse(response, rate, Collections.singletonList(f.getDescription()));
+//    }
+//end
+//
+//rule "Technical skill" //TechnicalSkills
+//salience 97
+//when
+//    exists(Hypothesis(description == "Considering Frame Team."))
+//    Evidence(description == "Do you have the technical skills?", value == $ts : value )
+//then
+//    double rate = $ts.equals("yes") ? Skills.TECHNICAL_SKILLS : Skills.NO_SKILL;
+//    Fact f = new Fact("Technical skills is " + rate);
+//    insert(f);
+//    synchronized (response) {
+//            listener.updateResponse(response, rate, Collections.singletonList(f.getDescription()));
+//        }
+//end
+//
+//rule "Analytical skill" //AnalyticalSkills
+//salience 96
+//when
+//    exists(Hypothesis(description == "Considering Frame Team."))
+//    Evidence(description == "Do you have the analytical skills?", value == $as : value )
+//then
+//    double rate = $as.equals("yes") ? Skills.ANALYTICAL_SKILLS : Skills.NO_SKILL;
+//    Fact f = new Fact("Analytical skills is " + rate);
+//    insert(f);
+//    synchronized (response) {
+//            listener.updateResponse(response, rate, Collections.singletonList(f.getDescription()));
+//        }
+//end
