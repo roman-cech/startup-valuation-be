@@ -1,4 +1,4 @@
-package cz.utb.fai.connector
+package cz.utb.fai.openai
 
 import org.springframework.stereotype.Component
 

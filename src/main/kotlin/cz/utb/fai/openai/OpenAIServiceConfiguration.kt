@@ -1,4 +1,4 @@
-package cz.utb.fai.connector
+package cz.utb.fai.openai
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.DeserializationFeature

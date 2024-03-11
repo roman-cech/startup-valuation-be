@@ -7,17 +7,18 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import reactor.core.Disposable
 import reactor.core.publisher.Mono
 
 @Component
-class RedisQueueWorker(
+class QueueWorker(
     @Value("\${redis.topic}") private val topic: String,
     private val redisTemplate: ReactiveRedisTemplate<String, String>,
     private val startupValuationService: StartupValuationService
 ) {
 
     @Scheduled(fixedRateString = "\${redis.interval}")
-    fun proceedQueue() {
+    fun proceedQueue(): Disposable =
         redisTemplate.opsForList().leftPop(topic) // Atomically get and remove the first element
             .flatMap { message ->
                 if (message != null) {
@@ -26,13 +27,12 @@ class RedisQueueWorker(
                     Mono.empty()
                 }
             }.subscribe()
-    }
 
     private fun processMessage(message: String): Mono<Void> {
         val (jobId, request) = parseMessage(message)
 
-        val response = startupValuationService.evaluateStartup(request)
-        val result = jacksonObjectMapper().writeValueAsString(response)
+        redisTemplate.opsForValue().set(jobId, "")
+        val result = jacksonObjectMapper().writeValueAsString(startupValuationService.evaluateStartup(request))
 
         return redisTemplate.opsForValue().set(jobId, result).then()
     }

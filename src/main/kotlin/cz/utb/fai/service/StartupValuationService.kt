@@ -1,7 +1,7 @@
 package cz.utb.fai.service
 
 
-import cz.utb.fai.connector.GetExplanationService
+import cz.utb.fai.openai.GetExplanationService
 import cz.utb.fai.model.StartupValuationRequest
 import cz.utb.fai.model.StartupValuationResponse
 import cz.utb.fai.model.dto.StartupValuationReq

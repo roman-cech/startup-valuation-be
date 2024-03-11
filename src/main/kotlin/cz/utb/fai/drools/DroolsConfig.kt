@@ -1,4 +1,4 @@
-package cz.utb.fai.common
+package cz.utb.fai.drools
 
 import org.drools.core.io.impl.ClassPathResource
 import org.kie.api.KieServices

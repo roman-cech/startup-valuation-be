@@ -22,7 +22,7 @@ class StartupValuationController(
     fun evaluateStartup(@RequestBody request: StartupValuationRequest): Mono<UUID> = publishRedisQueueService.publish(request)
 
 
-    @GetMapping(path = ["/v1/startups/result/{jobId}"])
+    @GetMapping(path = ["/v1/startups/evaluation/{jobId}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
-    fun getResult(@PathVariable jobId: UUID): Mono<Pair<JobStatus, StartupValuationResponse?>> = consumeRedisQueueService.getStatusAndResult(jobId)
+    fun getResult(@PathVariable jobId: UUID): Mono<Pair<JobStatus, StartupValuationResponse?>> = consumeRedisQueueService.getStatusAndResult(jobId.toString())
 }
