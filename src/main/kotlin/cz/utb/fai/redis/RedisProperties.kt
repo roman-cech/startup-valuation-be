@@ -8,4 +8,5 @@ import org.springframework.stereotype.Component
 class RedisProperties {
     lateinit var host: String
     lateinit var port: String
+    lateinit var password: String
 }

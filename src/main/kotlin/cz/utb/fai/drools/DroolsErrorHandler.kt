@@ -7,7 +7,6 @@ import org.springframework.http.client.ClientHttpResponse
 import org.springframework.util.FileCopyUtils
 import org.springframework.web.client.ResponseErrorHandler
 import java.io.IOException
-import javax.validation.Valid
 
 
 class DroolsErrorHandler(private val mapper: ObjectMapper) : ResponseErrorHandler {
@@ -34,9 +33,9 @@ class DroolsErrorHandler(private val mapper: ObjectMapper) : ResponseErrorHandle
     }
 }
 
-@JvmInline value class GeneralFault(@Valid @JsonProperty("errors") val errors: Errors)
+@JvmInline value class GeneralFault(@JsonProperty("errors") val errors: Errors)
 
-data class Errors(@Valid @JsonProperty("error") val error: List<Error> = emptyList())
+data class Errors(@JsonProperty("error") val error: List<Error> = emptyList())
 
 data class Error(@JsonProperty("code") val code: String, @JsonProperty("text") val text: String? = null)
 

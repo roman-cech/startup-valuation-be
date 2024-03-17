@@ -6,5 +6,35 @@ open-ai:
 redis:
   host: 127.0.0.1
   port: 6379
+  password: ${REDIS_PASSWORD}
   topic: evaluation_queue
   interval: 1000
+
+jwt:
+  key: ${JWT_KEY}
+  adminPassword: ${PASSWORD}
+  access-token-expiration: 3600000
+
+## H2 Configuration
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /user-console
+      settings:
+        trace: false
+        web-allow-others: false
+  datasource:
+    url: jdbc:h2:mem:user-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;
+    username: admin
+    password: password
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        use_sql_comments: true
+        format_sql: true
+    defer-datasource-initialization: true
