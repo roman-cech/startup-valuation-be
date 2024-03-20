@@ -28,6 +28,7 @@ open class WebSecurityConfiguration(
                     .antMatchers("/rest/v1/auth", "/error").permitAll()
                     .antMatchers(HttpMethod.POST, "/rest/v1/startups/evaluate").hasRole("ADMIN")
                     .antMatchers(HttpMethod.GET, "/rest/v1/startups/evaluation/{jobId}").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.POST, "/rest/v1/auth/sign-out").hasRole("ADMIN")
                     .anyRequest().authenticated()
             }
             .sessionManagement {

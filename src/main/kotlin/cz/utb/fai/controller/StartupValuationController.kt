@@ -5,6 +5,7 @@ import cz.utb.fai.model.StartupValuationResponse
 import cz.utb.fai.redis.JobStatus
 import cz.utb.fai.redis.PublishRedisQueueService
 import cz.utb.fai.redis.ConsumeRedisQueueService
+import cz.utb.fai.redis.Pair
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono

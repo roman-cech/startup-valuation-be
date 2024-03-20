@@ -16,12 +16,9 @@ class ConsumeRedisQueueService(
                 if (exists)
                     redisTemplate.opsForValue().get(jobId)
                         .map { value ->
-                            if (value.isNullOrEmpty()) {
-                                JobStatus.IN_PROGRESS to null
-                            } else {
-                                JobStatus.DONE to jacksonObjectMapper().readValue(value, StartupValuationResponse::class.java)
-                            }
+                            if (value.isNullOrEmpty()) Pair(JobStatus.IN_PROGRESS, null)
+                            else Pair(JobStatus.DONE, jacksonObjectMapper().readValue(value, StartupValuationResponse::class.java))
                         }
-                else Mono.just(JobStatus.INVALID_JOB_ID to null)
+                else Mono.just(Pair(JobStatus.INVALID_JOB_ID, null))
             }
 }

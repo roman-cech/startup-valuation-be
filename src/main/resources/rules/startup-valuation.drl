@@ -47,7 +47,7 @@ when
 then
     double rate = listener.adjustProductScore($value);
     // Create final rule fact with description
-    Fact fact = new Fact("You current success probability based on PRL is " + rate);
+    Fact fact = new Fact("You current success probability is " + rate + " out of 100.");
 
     response.setRate(rate);
     response.setExplanation(Arrays.asList($f.getDescription(), fact.getDescription()));

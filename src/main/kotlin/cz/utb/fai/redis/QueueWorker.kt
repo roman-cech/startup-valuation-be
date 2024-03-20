@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
+import kotlin.Pair
 
 @Component
 class QueueWorker(
@@ -21,11 +22,8 @@ class QueueWorker(
     fun proceedQueue(): Disposable =
         redisTemplate.opsForList().leftPop(topic) // Atomically get and remove the first element
             .flatMap { message ->
-                if (message != null) {
-                    processMessage(message)
-                } else {
-                    Mono.empty()
-                }
+                if (message != null) processMessage(message)
+                else Mono.empty()
             }.subscribe()
 
     private fun processMessage(message: String): Mono<Void> {
