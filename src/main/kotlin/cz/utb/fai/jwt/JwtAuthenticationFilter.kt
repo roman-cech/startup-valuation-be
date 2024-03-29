@@ -18,6 +18,8 @@ private const val BEARER = "Bearer "
 class JwtAuthenticationFilter(
     private val userDetailsService: CustomUserDetailsService,
     private val tokenService: TokenService,
+    private val accessTokenRepository: AccessTokenRepository,
+    private val refreshTokenRepository: RefreshTokenRepository
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -35,15 +37,16 @@ class JwtAuthenticationFilter(
         val jwtToken = authHeader!!.extractTokenValue()
 
         val email = tokenService.extractEmail(jwtToken)
-        val validToken = !tokenService.isBlacklisted(jwtToken)
+        val validAccess = accessTokenRepository.existByToken(jwtToken)
+        val validRefresh = refreshTokenRepository.existByToken(jwtToken)
 
-        if (email != null && SecurityContextHolder.getContext().authentication == null && validToken) {
+        if (email!= null && (validAccess || validRefresh) && SecurityContextHolder.getContext().authentication == null) {
             val foundUser = userDetailsService.loadUserByUsername(email)
 
             if (tokenService.isValid(jwtToken, foundUser)) updateContext(foundUser, request)
 
             filterChain.doFilter(request, response)
-        } else throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or missing token")
+        } else throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token is invalid or missing!")
     }
 
     private fun String?.doesNotContainBearerToken() = isNullOrBlank() || !startsWith(BEARER)

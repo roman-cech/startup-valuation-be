@@ -12,8 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 class TokenService(
     private val jwtProperties: JwtProperties
 ) {
-    // Use a ConcurrentHashMap to store blacklisted tokens for thread safety
-    private val blacklist: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     private val secretKey = Keys.hmacShaKeyFor(jwtProperties.key.toByteArray())
 
@@ -35,11 +33,7 @@ class TokenService(
 
     fun extractEmail(token: String): String? = getAllClaims(token)?.subject
 
-    fun addToBlacklist(token: String) = blacklist.add(token)
-
-    fun isBlacklisted(token: String): Boolean = blacklist.contains(token)
-
-    private fun isExpired(token: String): Boolean =
+    fun isExpired(token: String): Boolean =
         getAllClaims(token)?.expiration?.before(Date(System.currentTimeMillis())) ?: true
 
     private fun getAllClaims(token: String): Claims? =

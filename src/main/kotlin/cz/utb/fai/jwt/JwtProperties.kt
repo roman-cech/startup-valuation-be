@@ -9,4 +9,5 @@ class JwtProperties {
     lateinit var key: String
     lateinit var adminPassword: String
     lateinit var accessTokenExpiration: String
+    lateinit var refreshTokenExpiration: String
 }

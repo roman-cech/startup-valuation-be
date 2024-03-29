@@ -14,6 +14,10 @@ jwt:
   key: ${JWT_KEY}
   adminPassword: ${PASSWORD}
   access-token-expiration: 1800000
+  refresh-token-expiration: 900000
+
+frontend:
+  scheme: http://localhost:3000
 
 ## H2 Configuration
 spring:
