@@ -9,4 +9,5 @@ class RedisProperties {
     lateinit var host: String
     lateinit var port: String
     lateinit var password: String
+    lateinit var topic: String
 }

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping
-@CrossOrigin(origins = ["\${frontend.scheme}"])
+@CrossOrigin(origins = ["*"], maxAge = 3600)
 class AuthController(
     private val authenticationService: AuthenticationService
 ) {

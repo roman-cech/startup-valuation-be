@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  startup-valuation-be:
+    image: startup-valuation-be-container
+    restart: unless-stopped
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"

@@ -10,15 +10,15 @@ import reactor.core.publisher.Mono
 class ConsumeRedisQueueService(
     private val redisTemplate: ReactiveRedisTemplate<String, String>,
 ) {
-    fun getStatusAndResult(jobId: String): Mono<Pair<JobStatus, StartupValuationResponse?>> =
+    fun getStatusAndResult(jobId: String): Mono<CustomPair<JobStatus, StartupValuationResponse?>> =
         redisTemplate.hasKey(jobId)
             .flatMap { exists ->
                 if (exists)
                     redisTemplate.opsForValue().get(jobId)
                         .map { value ->
-                            if (value.isNullOrEmpty()) Pair(JobStatus.IN_PROGRESS, null)
-                            else Pair(JobStatus.DONE, jacksonObjectMapper().readValue(value, StartupValuationResponse::class.java))
+                            if (value.isNullOrEmpty()) CustomPair(JobStatus.IN_PROGRESS , null)
+                            else CustomPair(JobStatus.DONE , jacksonObjectMapper().readValue(value, StartupValuationResponse::class.java))
                         }
-                else Mono.just(Pair(JobStatus.INVALID_JOB_ID, null))
+                else Mono.just(CustomPair(JobStatus.INVALID_JOB_ID , null))
             }
 }

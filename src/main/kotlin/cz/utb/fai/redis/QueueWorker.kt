@@ -3,7 +3,6 @@ package cz.utb.fai.redis
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import cz.utb.fai.model.StartupValuationRequest
 import cz.utb.fai.service.StartupValuationService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -13,14 +12,14 @@ import kotlin.Pair
 
 @Component
 class QueueWorker(
-    @Value("\${redis.topic}") private val topic: String,
+    private val properties: RedisProperties,
     private val redisTemplate: ReactiveRedisTemplate<String, String>,
     private val startupValuationService: StartupValuationService
 ) {
 
     @Scheduled(fixedRateString = "\${redis.interval}")
     fun proceedQueue(): Disposable =
-        redisTemplate.opsForList().leftPop(topic) // Atomically get and remove the first element
+        redisTemplate.opsForList().leftPop(properties.topic) // Atomically get and remove the first element
             .flatMap { message ->
                 if (message != null) processMessage(message)
                 else Mono.empty()

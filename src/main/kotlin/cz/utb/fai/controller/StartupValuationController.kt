@@ -5,7 +5,7 @@ import cz.utb.fai.model.StartupValuationResponse
 import cz.utb.fai.redis.JobStatus
 import cz.utb.fai.redis.PublishRedisQueueService
 import cz.utb.fai.redis.ConsumeRedisQueueService
-import cz.utb.fai.redis.Pair
+import cz.utb.fai.redis.CustomPair
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -15,7 +15,6 @@ import java.util.*
 
 @RestController
 @RequestMapping(path = ["/rest"])
-@CrossOrigin(origins = ["\${frontend.scheme}"])
 class StartupValuationController(
     private val publishRedisQueueService: PublishRedisQueueService,
     private val consumeRedisQueueService: ConsumeRedisQueueService
@@ -28,7 +27,17 @@ class StartupValuationController(
 
     @GetMapping(path = ["/v1/startups/evaluate/{jobId}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
-    fun getStatusAndResult(@PathVariable jobId: UUID): Mono<Pair<JobStatus, StartupValuationResponse?>> {
-        return consumeRedisQueueService.getStatusAndResult(jobId.toString())
+    fun getStatusAndResult(@PathVariable jobId: UUID): ResponseEntity<Mono<CustomPair<JobStatus, StartupValuationResponse?>>> {
+        val responseMono = consumeRedisQueueService.getStatusAndResult(jobId.toString())
+
+        val statusCode =  responseMono.map { res ->
+            when (res.jobStatus) {
+                JobStatus.DONE -> HttpStatus.OK
+                JobStatus.IN_PROGRESS -> HttpStatus.ACCEPTED
+                JobStatus.INVALID_JOB_ID -> HttpStatus.BAD_REQUEST
+            }
+        }.block() ?: HttpStatus.INTERNAL_SERVER_ERROR
+
+        return ResponseEntity.status(statusCode).body(responseMono)
     }
 }
