@@ -12,7 +12,7 @@
     </parent>
 
     <groupId>cz.utb.fai</groupId>
-    <artifactId>startup-valuation</artifactId>
+    <artifactId>startup-valuation-be</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
