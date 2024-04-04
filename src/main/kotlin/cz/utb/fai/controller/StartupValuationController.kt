@@ -27,8 +27,8 @@ class StartupValuationController(
 
     @GetMapping(path = ["/v1/startups/evaluate/{jobId}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
-    fun getStatusAndResult(@PathVariable jobId: UUID): ResponseEntity<Mono<CustomPair<JobStatus, StartupValuationResponse?>>> {
-        val responseMono = consumeRedisQueueService.getStatusAndResult(jobId.toString())
+    fun getStatusAndEvaluation(@PathVariable jobId: UUID): ResponseEntity<Mono<CustomPair<JobStatus, StartupValuationResponse?>>> {
+        val responseMono = consumeRedisQueueService.getStatusAndEvaluation(jobId.toString())
 
         val statusCode =  responseMono.map { res ->
             when (res.jobStatus) {

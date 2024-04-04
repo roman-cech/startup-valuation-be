@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 class ConsumeRedisQueueService(
     private val redisTemplate: ReactiveRedisTemplate<String, String>,
 ) {
-    fun getStatusAndResult(jobId: String): Mono<CustomPair<JobStatus, StartupValuationResponse?>> =
+    fun getStatusAndEvaluation(jobId: String): Mono<CustomPair<JobStatus, StartupValuationResponse?>> =
         redisTemplate.hasKey(jobId)
             .flatMap { exists ->
                 if (exists)

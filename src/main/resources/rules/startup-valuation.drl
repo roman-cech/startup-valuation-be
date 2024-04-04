@@ -43,7 +43,7 @@ rule "Business Needs - No" //noBusinessNeeds
 salience 90
 when
     $f : Fact(description == "Your business needs further analysis")
-    $e: Evidence(description == "What is your PRL? [value 1-4]", value == $value : value)
+    $e: Evidence(description == "What is your Product Readiness Level?", value == $value : value)
 then
     double rate = listener.adjustProductScore($value);
     // Create final rule fact with description

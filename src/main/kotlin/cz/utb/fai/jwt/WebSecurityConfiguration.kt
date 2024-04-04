@@ -26,9 +26,9 @@ open class WebSecurityConfiguration(
             .authorizeHttpRequests {
                 it
                     .antMatchers("/rest/v1/auth", "/rest/v1/refresh", "/error").permitAll()
-                    .antMatchers(HttpMethod.POST, "/rest/v1/startups/evaluate").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.GET, "/rest/v1/startups/evaluation/{jobId}").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.POST, "/rest/v1/auth/sign-out").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.POST, "/rest/v1/startups/evaluate").hasRole(Role.ADMIN.name)
+                    .antMatchers(HttpMethod.GET, "/rest/v1/startups/evaluation/{jobId}").hasRole(Role.ADMIN.name)
+                    .antMatchers(HttpMethod.POST, "/rest/v1/auth/sign-out").hasRole(Role.ADMIN.name)
                     .anyRequest().authenticated()
             }
             .sessionManagement {

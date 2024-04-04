@@ -10,12 +10,14 @@ data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: UUID = UUID.randomUUID(),
+    var firstName: String,
+    var lastName: String,
     var email: String,
     var password: String,
     @Enumerated(EnumType.STRING)
     var role: Role
 ) {
-    constructor() : this(email = "", password = "", role = Role.USER)
+    constructor() : this(firstName = "", lastName = "", email = "", password = "", role = Role.USER)
 }
 
 enum class Role { USER, ADMIN }

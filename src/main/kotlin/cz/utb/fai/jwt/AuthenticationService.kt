@@ -13,20 +13,30 @@ class AuthenticationService(
     private val tokenService: TokenService,
     private val accessTokenRepository: AccessTokenRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
+    private val userRepository: UserRepository,
     private val jwtProperties: JwtProperties
 ) {
 
     fun authentication(email: String, password: String): AuthenticationResponse {
         authManager.authenticate(UsernamePasswordAuthenticationToken(email, password))
 
-        val user = userDetailsService.loadUserByUsername(email)
-        val accessToken = createAccessToken(user)
-        val refreshToken = createRefreshToken(user)
+        val userDetails = userDetailsService.loadUserByUsername(email)
+        val accessToken = createAccessToken(userDetails)
+        val refreshToken = createRefreshToken(userDetails)
 
-        refreshTokenRepository.save(refreshToken, user)
-        accessTokenRepository.save(accessToken, user)
+        val user = requireNotNull(userRepository.findByEmail(email))
 
-        return AuthenticationResponse(accessToken = accessToken, refreshToken = refreshToken)
+        refreshTokenRepository.save(refreshToken, userDetails)
+        accessTokenRepository.save(accessToken, userDetails)
+
+        return AuthenticationResponse(
+            token = AuthenticationResponse.Token(accessToken = accessToken, refreshToken = refreshToken),
+            user = AuthenticationResponse.UserSession(
+                firstName = user.firstName,
+                lastName = user.lastName,
+                email = user.email
+            )
+        )
     }
 
     fun logOut(token: String) = tokenService.extractEmail(token)?.let { email ->

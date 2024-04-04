@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   startup-valuation-be:
-    image: startup-valuation-be-container
+    image: startup-valuation-be-container:latest
     restart: unless-stopped
     depends_on:
       - redis

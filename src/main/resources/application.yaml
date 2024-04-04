@@ -15,6 +15,10 @@ jwt:
   access-token-expiration: 1800000
   refresh-token-expiration: 900000
 
+frontend:
+  host: ${REACT_HOST}
+  port: ${REACT_PORT}
+
 
 ## H2 Configuration
 spring:
