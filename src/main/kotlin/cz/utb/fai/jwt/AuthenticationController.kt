@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping(path = ["/rest"])
-class AuthController(
+class AuthenticationController(
     private val authenticationService: AuthenticationService
 ) {
     @PostMapping(path = ["/v1/auth"], consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])

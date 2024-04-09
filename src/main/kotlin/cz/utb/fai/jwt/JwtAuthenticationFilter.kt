@@ -1,13 +1,12 @@
 package cz.utb.fai.jwt
 
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import org.springframework.web.server.ResponseStatusException
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -27,7 +26,7 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val authHeader: String? = request.getHeader("Authorization")
+        val authHeader: String? = request.getHeader(HttpHeaders.AUTHORIZATION)
 
         if (authHeader.doesNotContainBearerToken()) {
             filterChain.doFilter(request, response)
@@ -43,10 +42,14 @@ class JwtAuthenticationFilter(
         if (email!= null && (validAccess || validRefresh) && SecurityContextHolder.getContext().authentication == null) {
             val foundUser = userDetailsService.loadUserByUsername(email)
 
-            if (tokenService.isValid(jwtToken, foundUser)) updateContext(foundUser, request)
+            if (tokenService.isValid(jwtToken, foundUser)) {
+                updateContext(foundUser, request)
+                filterChain.doFilter(request, response)
+                return
+            }
+        }
 
-            filterChain.doFilter(request, response)
-        } else throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token is invalid or missing!")
+        throw JwtAuthenticationException(JwtAuthenticationException.NOT_AUTHORIZED_MESSAGE)
     }
 
     private fun String?.doesNotContainBearerToken() = isNullOrBlank() || !startsWith(BEARER)

@@ -24,7 +24,6 @@ class StartupValuationController(
     @ResponseBody
     fun evaluateStartup(@RequestBody request: StartupValuationRequest): ResponseEntity<Mono<UUID>> = ResponseEntity.status(HttpStatus.CREATED).body(publishRedisQueueService.publish(request))
 
-
     @GetMapping(path = ["/v1/startups/evaluate/{jobId}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
     fun getStatusAndEvaluation(@PathVariable jobId: UUID): ResponseEntity<Mono<CustomPair<JobStatus, StartupValuationResponse?>>> {
