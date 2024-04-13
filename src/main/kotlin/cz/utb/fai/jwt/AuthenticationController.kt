@@ -33,7 +33,7 @@ class AuthenticationController(
             ResponseEntity.status(HttpStatus.OK).body(refreshToken)
         } ?: ResponseEntity.status(HttpStatus.FORBIDDEN).build()
 
-    @PostMapping("/v1/log-out", consumes = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("/v1/log-out")
     @ResponseBody
     fun logOut(@RequestParam token: String): ResponseEntity<Unit> {
         authenticationService.logOut(token)

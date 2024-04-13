@@ -25,21 +25,21 @@ open class RestConfig : WebMvcConfigurer {
     @Value("\${frontend.host}") private lateinit var host: String
     @Value("\${frontend.port}") private lateinit var port: String
 
-    private val restObjectMapper: ObjectMapper by lazy { jacksonObjectMapper()
-        .registerKotlinModule()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
-        .configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
+    private val restObjectMapper: ObjectMapper by lazy {
+        jacksonObjectMapper()
+            .registerKotlinModule()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
+            .configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
     }
 
     @Bean
-    open fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
-        val converter = MappingJackson2HttpMessageConverter().apply { this.objectMapper = restObjectMapper }
+    open fun restTemplate(builder: RestTemplateBuilder): RestTemplate = builder
+        .additionalMessageConverters(MappingJackson2HttpMessageConverter().apply { this.objectMapper = restObjectMapper })
+        .build()
 
-        return builder
-            .additionalMessageConverters(converter)
-            .build()
-    }
+    @Bean
+    open fun restExceptionHandler(): CustomRestExceptionHandler = CustomRestExceptionHandler()
 
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
         configurer.defaultContentType(MediaType.APPLICATION_JSON).mediaType("json", MediaType.APPLICATION_JSON)
@@ -50,6 +50,5 @@ open class RestConfig : WebMvcConfigurer {
             .allowedOrigins("$host:$port")
             .allowedMethods("GET", "POST", "PUT")
             .allowedHeaders("*")
-
     }
 }

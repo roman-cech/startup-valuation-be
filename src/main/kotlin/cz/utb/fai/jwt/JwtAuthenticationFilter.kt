@@ -1,6 +1,7 @@
 package cz.utb.fai.jwt
 
 import org.springframework.http.HttpHeaders
+import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
@@ -12,6 +13,8 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 private const val BEARER = "Bearer "
+private const val NOT_AUTHORIZED_MESSAGE = "Not Authorized!"
+
 
 @Component
 class JwtAuthenticationFilter(
@@ -36,10 +39,10 @@ class JwtAuthenticationFilter(
         val jwtToken = authHeader!!.extractTokenValue()
 
         val email = tokenService.extractEmail(jwtToken)
-        val validAccess = accessTokenRepository.existByToken(jwtToken)
-        val validRefresh = refreshTokenRepository.existByToken(jwtToken)
+        val isValidAccess = accessTokenRepository.existByToken(jwtToken)
+        val isValidRefresh = refreshTokenRepository.existByToken(jwtToken)
 
-        if (email!= null && (validAccess || validRefresh) && SecurityContextHolder.getContext().authentication == null) {
+        if (email != null && (isValidAccess || isValidRefresh) && SecurityContextHolder.getContext().authentication == null) {
             val foundUser = userDetailsService.loadUserByUsername(email)
 
             if (tokenService.isValid(jwtToken, foundUser)) {
@@ -48,8 +51,7 @@ class JwtAuthenticationFilter(
                 return
             }
         }
-
-        throw JwtAuthenticationException(JwtAuthenticationException.NOT_AUTHORIZED_MESSAGE)
+        throw InternalAuthenticationServiceException(NOT_AUTHORIZED_MESSAGE)
     }
 
     private fun String?.doesNotContainBearerToken() = isNullOrBlank() || !startsWith(BEARER)

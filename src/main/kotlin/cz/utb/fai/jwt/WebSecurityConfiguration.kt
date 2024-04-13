@@ -25,16 +25,25 @@ open class WebSecurityConfiguration(
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
-                    .antMatchers("/rest/v1/auth", "/rest/v1/refresh", "/error").permitAll()
+                    .antMatchers(*URL_WHITE_LIST).permitAll()
                     .antMatchers(HttpMethod.POST, "/rest/v1/startups/evaluate").hasRole(Role.ADMIN.name)
                     .antMatchers(HttpMethod.GET, "/rest/v1/startups/evaluation/{jobId}").hasRole(Role.ADMIN.name)
                     .antMatchers(HttpMethod.POST, "/rest/v1/auth/sign-out").hasRole(Role.ADMIN.name)
                     .anyRequest().authenticated()
             }
+
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
+
+    companion object {
+        private val URL_WHITE_LIST = arrayOf(
+            "/rest/v1/auth",
+            "/rest/v1/refresh", //TODO
+            "/error"
+        )
+    }
 }
