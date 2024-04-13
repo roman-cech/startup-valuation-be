@@ -24,6 +24,7 @@
         <spring.doc>1.5.10</spring.doc>
         <spring.boot.web>3.2.3</spring.boot.web>
         <kotlin.version>1.9.23</kotlin.version>
+        <jwt.version>0.11.2</jwt.version>
     </properties>
 
 
@@ -170,13 +171,13 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <version>0.11.2</version>
+            <version>${jwt.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <version>0.11.2</version>
+            <version>${jwt.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>

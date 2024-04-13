@@ -4,6 +4,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -15,9 +16,9 @@ import org.springframework.web.context.request.ServletRequestAttributes
 @RestControllerAdvice
 class CustomRestExceptionHandler {
 
-    @ExceptionHandler(InternalAuthenticationServiceException::class)
+    @ExceptionHandler(AccessDeniedException::class)
     @ResponseBody
-    fun handleInternalAuthenticationServiceException(e: InternalAuthenticationServiceException): ResponseEntity<Any> {
+    fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<Any> {
         val request = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).request
         val body = GeneralFault(
             errorCode = HttpStatus.UNAUTHORIZED.value(),

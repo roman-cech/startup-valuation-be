@@ -1,8 +1,7 @@
 package cz.utb.fai.drools
 
-import cz.utb.fai.model.dto.StartupValuationReq
-import cz.utb.fai.model.dto.StartupValuationRes
-import cz.utb.fai.model.type.Skills
+import cz.utb.fai.dto.StartupValuationReq
+import cz.utb.fai.dto.StartupValuationRes
 import org.kie.api.runtime.KieContainer
 import org.springframework.stereotype.Component
 

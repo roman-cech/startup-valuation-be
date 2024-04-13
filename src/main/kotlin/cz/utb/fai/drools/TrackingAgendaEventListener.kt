@@ -1,8 +1,8 @@
 package cz.utb.fai.drools
 
-import cz.utb.fai.model.dto.StartupValuationRes
-import cz.utb.fai.model.type.FrameScore.PRODUCT_SCORE
-import cz.utb.fai.model.type.RuleType
+import cz.utb.fai.dto.StartupValuationRes
+import cz.utb.fai.dto.type.FrameScore.PRODUCT_SCORE
+import cz.utb.fai.dto.type.RuleType
 import org.kie.api.event.rule.*
 import org.kie.api.runtime.KieSession
 import org.springframework.stereotype.Component

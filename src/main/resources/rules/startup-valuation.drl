@@ -14,16 +14,16 @@
 */
 
 
-import cz.utb.fai.model.dto.StartupValuationRes
-import cz.utb.fai.model.type.Evidence
-import cz.utb.fai.model.type.Fact
-import cz.utb.fai.model.type.Hypothesis
+import cz.utb.fai.dto.StartupValuationRes
+import cz.utb.fai.dto.type.Evidence
+import cz.utb.fai.dto.type.Fact
+import cz.utb.fai.dto.type.Hypothesis
 import java.util.ArrayList
 import java.util.List
 import java.util.Arrays
 import java.util.Collections
 import cz.utb.fai.drools.TrackingAgendaEventListener
-import cz.utb.fai.model.type.Skills
+import cz.utb.fai.dto.type.Skills
 
 global StartupValuationRes response
 global TrackingAgendaEventListener listener

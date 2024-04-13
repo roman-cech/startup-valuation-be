@@ -1,5 +1,7 @@
 package cz.utb.fai.openai
 
+import cz.utb.fai.openai.dto.GetExplanationRequest
+import cz.utb.fai.openai.dto.GetExplanationResponse
 import org.springframework.http.HttpMethod
 import org.springframework.web.client.RestTemplate
 
@@ -14,7 +16,7 @@ open class GetExplanationImpl(
 
     override fun getExplanation(prompt: String): GetExplanationResponse =
         callService(
-            request = OpenAIRequest(
+            request = GetExplanationRequest(
                 model = properties.model,
                 prompt = prompt,
                 temperature = TEMPERATURE

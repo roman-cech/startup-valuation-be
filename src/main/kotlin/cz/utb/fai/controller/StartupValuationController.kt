@@ -1,11 +1,11 @@
 package cz.utb.fai.controller
 
-import cz.utb.fai.model.StartupValuationRequest
-import cz.utb.fai.model.StartupValuationResponse
-import cz.utb.fai.redis.JobStatus
-import cz.utb.fai.redis.PublishRedisQueueService
-import cz.utb.fai.redis.ConsumeRedisQueueService
-import cz.utb.fai.redis.CustomPair
+import cz.utb.fai.dto.controller.StartupValuationRequest
+import cz.utb.fai.dto.controller.StartupValuationResponse
+import cz.utb.fai.messaging.type.JobStatus
+import cz.utb.fai.messaging.PublishRedisQueueService
+import cz.utb.fai.messaging.ConsumeRedisQueueService
+import cz.utb.fai.messaging.type.CustomPair
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
