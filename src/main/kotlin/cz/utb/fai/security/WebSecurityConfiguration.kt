@@ -26,7 +26,7 @@ open class WebSecurityConfiguration(
                     .antMatchers(*URL_WHITE_LIST).permitAll()
                     .antMatchers(HttpMethod.POST, "/rest/v1/startups/evaluate").hasRole(Role.ADMIN.name)
                     .antMatchers(HttpMethod.GET, "/rest/v1/startups/evaluation/{jobId}").hasRole(Role.ADMIN.name)
-                    .antMatchers(HttpMethod.POST, "/rest/v1/auth/log-out").hasRole(Role.ADMIN.name)
+                    .antMatchers(HttpMethod.POST, "/rest/v1/auth/logout").hasRole(Role.ADMIN.name)
                     .anyRequest().authenticated()
             }
             .sessionManagement {
@@ -38,8 +38,8 @@ open class WebSecurityConfiguration(
 
     companion object {
         private val URL_WHITE_LIST = arrayOf(
-            "/rest/v1/auth",
-            "/rest/v1/refresh",
+            "/rest/v1/auth/login",
+            "/rest/v1/auth/refresh",
             "/error"
         )
     }
