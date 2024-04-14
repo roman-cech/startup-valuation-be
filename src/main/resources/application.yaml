@@ -12,7 +12,7 @@ redis:
 
 jwt:
   key: ${JWT_KEY}
-  access-token-expiration: 1800000
+  access-token-expiration: 120000
   refresh-token-expiration: 900000
 
 frontend:

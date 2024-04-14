@@ -22,8 +22,7 @@ private const val NOT_AUTHORIZED_MESSAGE = "Not Authorized!"
 class JwtAuthenticationFilter(
     private val userDetailsService: CustomUserDetailsService,
     private val tokenService: TokenService,
-    private val accessTokenRepository: AccessTokenRepository,
-    private val refreshTokenRepository: RefreshTokenRepository
+    private val accessTokenRepository: AccessTokenRepository
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -42,9 +41,8 @@ class JwtAuthenticationFilter(
 
         val email = tokenService.extractEmail(jwtToken)
         val isValidAccess = accessTokenRepository.existByToken(jwtToken)
-        val isValidRefresh = refreshTokenRepository.existByToken(jwtToken)
 
-        if (email != null && (isValidAccess || isValidRefresh) && SecurityContextHolder.getContext().authentication == null) {
+        if (email != null && isValidAccess && SecurityContextHolder.getContext().authentication == null) {
             val foundUser = userDetailsService.loadUserByUsername(email)
 
             if (tokenService.isValid(jwtToken, foundUser)) {

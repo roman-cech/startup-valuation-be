@@ -13,7 +13,7 @@ class RefreshTokenRepository {
 
     fun save(token: String, userDetails: UserDetails) { tokens[token] = userDetails }
 
-    fun existByToken(token: String): Boolean = tokens.containsKey(token)
+    fun updateToken(token: String, userDetails: UserDetails) { tokens.putIfAbsent(token, userDetails) }
 
     fun deleteByUserDetails(userDetails: UserDetails) {
         tokens.entries.find { it.value == userDetails }?.key.let { tokens.remove(it) }

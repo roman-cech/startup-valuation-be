@@ -11,6 +11,8 @@ class AccessTokenRepository {
 
     fun save(token: String, userDetails: UserDetails) { tokens[token] = userDetails }
 
+    fun updateToken(token: String, userDetails: UserDetails) { tokens.putIfAbsent(token, userDetails) }
+
     fun existByToken(token: String): Boolean = tokens.containsKey(token)
 
     fun deleteByUserDetails(userDetails: UserDetails) {

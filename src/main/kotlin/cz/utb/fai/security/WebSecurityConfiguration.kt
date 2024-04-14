@@ -39,7 +39,7 @@ open class WebSecurityConfiguration(
     companion object {
         private val URL_WHITE_LIST = arrayOf(
             "/rest/v1/auth",
-            "/rest/v1/refresh", //TODO
+            "/rest/v1/refresh",
             "/error"
         )
     }

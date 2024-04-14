@@ -1,6 +1,7 @@
 package cz.utb.fai.security
 
 import cz.utb.fai.dto.controller.AuthenticationResponse
+import cz.utb.fai.dto.controller.Token
 import cz.utb.fai.repository.AccessTokenRepository
 import cz.utb.fai.repository.RefreshTokenRepository
 import cz.utb.fai.repository.UserRepository
@@ -30,11 +31,15 @@ class AuthenticationService(
 
         val user = requireNotNull(userRepository.findByEmail(email))
 
+        accessTokenRepository.save(accessToken.accessToken, userDetails)
         refreshTokenRepository.save(refreshToken, userDetails)
-        accessTokenRepository.save(accessToken, userDetails)
 
         return AuthenticationResponse(
-            token = AuthenticationResponse.Token(accessToken = accessToken, refreshToken = refreshToken),
+            token = Token(
+                accessToken = accessToken.accessToken,
+                refreshToken = refreshToken,
+                expirationDate = accessToken.expirationDate
+            ),
             user = AuthenticationResponse.UserSession(
                 firstName = user.firstName,
                 lastName = user.lastName,
@@ -49,15 +54,26 @@ class AuthenticationService(
         refreshTokenRepository.deleteByUserDetails(userDetails)
     }
 
-    fun refreshAccessToken(refreshToken: String): String? {
-        val extractedEmail = tokenService.extractEmail(refreshToken)
+    fun refreshAccessToken(token: String): Token? {
+        val extractedEmail = tokenService.extractEmail(token)
 
         return extractedEmail?.let { email ->
             val currentUserDetails = userDetailsService.loadUserByUsername(email)
-            val refreshTokenUserDetails = refreshTokenRepository.findUserDetailsByToken(refreshToken)
+            val refreshTokenUserDetails = refreshTokenRepository.findUserDetailsByToken(token)
 
-            if (!tokenService.isExpired(refreshToken) && refreshTokenUserDetails?.username == currentUserDetails.username)
-                createAccessToken(currentUserDetails)
+            if (!tokenService.isExpired(token) && refreshTokenUserDetails?.username == currentUserDetails.username) {
+                val accessToken = createAccessToken(currentUserDetails)
+                val refreshToken = createRefreshToken(currentUserDetails)
+
+                accessTokenRepository.updateToken(accessToken.accessToken, currentUserDetails)
+                refreshTokenRepository.updateToken(refreshToken, currentUserDetails)
+
+                Token(
+                    accessToken = accessToken.accessToken,
+                    refreshToken = refreshToken,
+                    expirationDate = accessToken.expirationDate
+                )
+            }
             else null
         }
     }
@@ -67,8 +83,8 @@ class AuthenticationService(
         expirationDate = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration.toLong())
     )
 
-    private fun createRefreshToken(user: UserDetails) = tokenService.generate(
+    private fun createRefreshToken(user: UserDetails): String = tokenService.generate(
         userDetails = user,
         expirationDate = Date(System.currentTimeMillis() + jwtProperties.refreshTokenExpiration.toLong())
-    )
+    ).accessToken
 }

@@ -2,6 +2,7 @@ package cz.utb.fai.controller
 
 import cz.utb.fai.dto.controller.AuthenticationRequest
 import cz.utb.fai.dto.controller.AuthenticationResponse
+import cz.utb.fai.dto.controller.Token
 import cz.utb.fai.security.AuthenticationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -23,9 +24,10 @@ class AuthenticationController(
         ResponseEntity.status(HttpStatus.CREATED).body(
             with(authenticationService.authentication(request.email, request.password)) {
                 AuthenticationResponse(
-                    token = AuthenticationResponse.Token(
+                    token = Token(
                         accessToken = token.accessToken,
-                        refreshToken = token.refreshToken
+                        refreshToken = token.refreshToken,
+                        expirationDate = token.expirationDate
                     ),
                     user = AuthenticationResponse.UserSession(
                         firstName = user.firstName,
@@ -38,10 +40,10 @@ class AuthenticationController(
 
     @PostMapping(path = ["/v1/refresh"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
-    fun refreshToken(@RequestParam token: String): ResponseEntity<String> =
+    fun refreshToken(@RequestParam token: String): ResponseEntity<Token> =
         authenticationService.refreshAccessToken(token)?.let { refreshToken ->
             ResponseEntity.status(HttpStatus.OK).body(refreshToken)
-        } ?: ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+        } ?: ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
 
     @PostMapping("/v1/log-out")
     @ResponseBody

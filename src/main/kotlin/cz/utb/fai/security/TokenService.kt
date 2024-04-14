@@ -18,14 +18,16 @@ class TokenService(
         userDetails: UserDetails,
         expirationDate: Date,
         additionalClaims: Map<String, Any> = emptyMap()
-    ): String =
-        Jwts.builder()
+    ): AccessToken = AccessToken(
+        accessToken = Jwts.builder()
             .setSubject(userDetails.username)
             .setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(expirationDate)
             .addClaims(additionalClaims)
             .signWith(secretKey)
-            .compact()
+            .compact(),
+        expirationDate = expirationDate
+    )
 
     fun isValid(token: String, userDetails: UserDetails): Boolean =
         userDetails.username == extractEmail(token) && !isExpired(token)
@@ -46,3 +48,8 @@ class TokenService(
             null
         }
 }
+
+data class AccessToken(
+    val accessToken: String,
+    val expirationDate: Date
+)
