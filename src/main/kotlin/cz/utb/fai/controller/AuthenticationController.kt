@@ -15,7 +15,7 @@ class AuthenticationController(
     private val authenticationService: AuthenticationService
 ) {
     @PostMapping(
-        path = ["/v1/auth"],
+        path = ["/v1/auth/login"],
         consumes = [MediaType.APPLICATION_JSON_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
@@ -38,14 +38,14 @@ class AuthenticationController(
             }
         )
 
-    @PostMapping(path = ["/v1/refresh"], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping(path = ["/v1/auth/refresh"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
     fun refreshToken(@RequestParam token: String): ResponseEntity<Token> =
         authenticationService.refreshAccessToken(token)?.let { refreshToken ->
             ResponseEntity.status(HttpStatus.OK).body(refreshToken)
         } ?: ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
 
-    @PostMapping("/v1/log-out")
+    @PostMapping("/v1/auth/logout")
     @ResponseBody
     fun logOut(@RequestParam token: String): ResponseEntity<Unit> =
         authenticationService.logOut(token)?.let { ResponseEntity.noContent().build() } ?: ResponseEntity.badRequest()
