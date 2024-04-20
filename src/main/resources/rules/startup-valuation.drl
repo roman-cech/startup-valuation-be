@@ -24,100 +24,119 @@ import java.util.Arrays
 import java.util.Collections
 import cz.utb.fai.drools.TrackingAgendaEventListener
 import cz.utb.fai.dto.type.Skills
+import cz.utb.fai.dto.type.Conclusion
 
 global StartupValuationRes response
 global TrackingAgendaEventListener listener
 
 
-rule "Business Needs"
+rule "Business Needs - No"
 salience 100
 when
     Evidence(description == "Do you know what your business needs?", value == "no")
 then
-    // Trigger actions based on the evidence
-    // Insert or assert a fact indicating the need for further analysis
-    insertLogical(new Fact("Your business needs further analysis"));
+    Hypothesis hypothesis = new Hypothesis("Your business needs further analysis");
+    insertLogical(hypothesis);
+    response.appendExplanation(hypothesis.getDescription());
 end
 
-rule "Business Needs - No" //noBusinessNeeds
-salience 90
+rule "Product Readiness Level"
+salience 95
 when
-    $f : Fact(description == "Your business needs further analysis")
-    $e: Evidence(description == "What is your Product Readiness Level?", value == $value : value)
+    Evidence(description == "What is your Product Readiness Level?", value == $value : value) and
+    exists Hypothesis(description == "Your business needs further analysis")
 then
     double rate = listener.adjustProductScore($value);
-    // Create final rule fact with description
-    Fact fact = new Fact("You current success probability is " + rate + " out of 100.");
+    Conclusion conclusion = new Conclusion("You current success probability is " + rate + " out of 100.", rate);
 
-    response.setRate(rate);
-    response.setExplanation(Arrays.asList($f.getDescription(), fact.getDescription()));
-//    synchronized (response) {
-//        listener.updateResponse(response, rate, Arrays.asList($f.getDescription(), fact.getDescription()));
-//    }
+    response.setRate(conclusion.getRate());
+    response.appendExplanation(conclusion.getDescription());
 end
 
-
-rule "Business Needs - Yes" //BusinessNeeds
+rule "Business Needs - Yes"
 salience 99
 when
     Evidence(description == "Do you know what your business needs?", value == "yes")
 then
-    insert(new Hypothesis("Considering Frame Team."));
+    insertLogical(new Hypothesis("Considering Frame Team."));
 end
 
-/*
-rule "Frame: Team" //team
-ruleflow-group "team"   //TODO
+rule "Marketing skill"
+salience 94
+when
+    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have the marketing skills?", value == $ms : value )
+then
+    double rate = $ms.equals("yes") ? Skills.MARKETING_SKILLS : Skills.NO_SKILL;
+    if (rate == Skills.NO_SKILL) {
+        Hypothesis hypothesis = new Hypothesis("You should consider expanding your Marketing skills.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
+end
+
+rule "Technical skill"
+salience 93
+when
+    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have the technical skills?", value == $ts : value )
+then
+    double rate = $ts.equals("yes") ? Skills.TECHNICAL_SKILLS : Skills.NO_SKILL;
+    if (rate == Skills.NO_SKILL) {
+        Hypothesis hypothesis = new Hypothesis("You should consider expanding your Technical skills.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
+end
+
+rule "Analytical skill"
+salience 92
+when
+    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have the analytical skills?", value == $as : value )
+then
+    double rate = $as.equals("yes") ? Skills.ANALYTICAL_SKILLS : Skills.NO_SKILL;
+    if (rate == Skills.NO_SKILL) {
+        Hypothesis hypothesis = new Hypothesis("You should consider expanding your Analytical skills.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
+end
+
+rule "Experience"
+salience 91
+when
+    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have previous experience as a team?", value == $experience : value )
+then
+    double rate = $experience.equals("yes") ? Skills.TEAM_SKILLS : Skills.NO_SKILL;
+    if (rate == Skills.NO_SKILL) {
+        Hypothesis hypothesis = new Hypothesis("You should consider experience in the field a bit more.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
+end
+
+rule "Goal"
 salience 90
 when
-    exists(Hypothesis("Considering Frame Team."))
-    $ms: Evidence(description == "Do you have the marketing skills?", value == $ms : value )
-    $ts: Evidence(description == "Do you have the technical skills?", value == $ts : value )
-    $as: Evidence(description == "Do you have the analytical skills?", value == $as : value )
-
+    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Are your personal goals aligned with the start-up vision?", value == $goal : value )
 then
-    response.setExplanation(Arrays.asList("FRAME TEAM"));
+    double rate = $goal.equals("yes") ? Skills.TEAM_SKILLS : Skills.NO_SKILL;
+    if (rate == Skills.NO_SKILL) {
+        Hypothesis hypothesis = new Hypothesis("You should revise if your goals are aligned with company visions.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
 end
-*/
 
-//rule "Marketing skill" //MarketingSkills
-//salience 98
-//when
-//    exists(Hypothesis(description == "Considering Frame Team."))
-//    Evidence(description == "Do you have the marketing skills?", value == $ms : value )
-//then
-//    double rate = $ms.equals("yes") ? Skills.MARKETING_SKILLS : Skills.NO_SKILL;
-//    Fact f = new Fact("Marketing skills is " + rate);
-//    insert(f);
-//    synchronized (response) {
-//        listener.updateResponse(response, rate, Collections.singletonList(f.getDescription()));
-//    }
-//end
-//
-//rule "Technical skill" //TechnicalSkills
-//salience 97
-//when
-//    exists(Hypothesis(description == "Considering Frame Team."))
-//    Evidence(description == "Do you have the technical skills?", value == $ts : value )
-//then
-//    double rate = $ts.equals("yes") ? Skills.TECHNICAL_SKILLS : Skills.NO_SKILL;
-//    Fact f = new Fact("Technical skills is " + rate);
-//    insert(f);
-//    synchronized (response) {
-//            listener.updateResponse(response, rate, Collections.singletonList(f.getDescription()));
-//        }
-//end
-//
-//rule "Analytical skill" //AnalyticalSkills
-//salience 96
-//when
-//    exists(Hypothesis(description == "Considering Frame Team."))
-//    Evidence(description == "Do you have the analytical skills?", value == $as : value )
-//then
-//    double rate = $as.equals("yes") ? Skills.ANALYTICAL_SKILLS : Skills.NO_SKILL;
-//    Fact f = new Fact("Analytical skills is " + rate);
-//    insert(f);
-//    synchronized (response) {
-//            listener.updateResponse(response, rate, Collections.singletonList(f.getDescription()));
-//        }
-//end
+rule "Expertise"
+salience 89
+when
+    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do your team or advisors have industry expertise?", value == $expertise : value )
+then
+    double rate = $expertise.equals("yes") ? Skills.TEAM_SKILLS : Skills.NO_SKILL;
+    if (rate == Skills.NO_SKILL) {
+        Hypothesis hypothesis = new Hypothesis("You should consider expertise in the field a bit more.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
+end
+
+//TODO conclusion from FRAME TEAM?

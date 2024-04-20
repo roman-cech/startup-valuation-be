@@ -1,10 +1,11 @@
 package cz.utb.fai.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StartupValuationRes {
-    private Double rate;
-    private List<String> explanation;
+    private Double rate = 0d;
+    private List<String> explanation = new ArrayList<>();
 
     public StartupValuationRes() {}
 
@@ -12,6 +13,14 @@ public class StartupValuationRes {
         this.rate = rate;
         this.explanation = explanation;
     }
+
+    // Method to append an explanation to the existing list
+    public void appendExplanation(String newExplanation) {
+        this.explanation.add(newExplanation);
+    }
+
+    // Method to append a rate
+    public void appendRate(Double newRate) { this.rate += newRate; }
 
     public Double getRate() {
         return rate;
