@@ -17,7 +17,9 @@ open class DroolsConfig {
 
     @Bean
     open fun kieContainer(): KieContainer = kieServices.run {
-        val kieFileSystem = newKieFileSystem().write(ClassPathResource(RULES_VALUATION_DRL))
+        val kieFileSystem = newKieFileSystem().apply {
+            this.write(ClassPathResource(RULES_VALUATION_DRL))
+        }
 
         val kieBuilder = kieServices.newKieBuilder(kieFileSystem).buildAll()
 

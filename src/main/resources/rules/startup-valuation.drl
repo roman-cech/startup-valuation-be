@@ -16,14 +16,14 @@
 
 import cz.utb.fai.dto.StartupValuationRes
 import cz.utb.fai.dto.type.Evidence
-import cz.utb.fai.dto.type.Fact
 import cz.utb.fai.dto.type.Hypothesis
+import cz.utb.fai.dto.type.Probability
 import java.util.ArrayList
 import java.util.List
 import java.util.Arrays
 import java.util.Collections
 import cz.utb.fai.drools.TrackingAgendaEventListener
-import cz.utb.fai.dto.type.Skills
+import cz.utb.fai.dto.type.Score
 import cz.utb.fai.dto.type.Conclusion
 
 global StartupValuationRes response
@@ -41,12 +41,12 @@ then
 end
 
 rule "Product Readiness Level"
-salience 95
+salience 100
 when
-    Evidence(description == "What is your Product Readiness Level?", value == $value : value) and
     exists Hypothesis(description == "Your business needs further analysis")
+    Evidence(description == "What is your Product Readiness Level?", value == $value : value)
 then
-    double rate = listener.adjustProductScore($value);
+    double rate = listener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
     Conclusion conclusion = new Conclusion("You current success probability is " + rate + " out of 100.", rate);
 
     response.setRate(conclusion.getRate());
@@ -64,10 +64,11 @@ end
 rule "Marketing skill"
 salience 94
 when
-    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have the marketing skills?", value == $ms : value )
+    exists Hypothesis(description == "Considering Frame Team.")
+    Evidence(description == "Do you have the marketing skills?", value == $ms : value )
 then
-    double rate = $ms.equals("yes") ? Skills.MARKETING_SKILLS : Skills.NO_SKILL;
-    if (rate == Skills.NO_SKILL) {
+    double rate = $ms.equals("yes") ? Score.MARKETING_SKILLS : Score.NO_SKILL;
+    if (rate == Score.NO_SKILL) {
         Hypothesis hypothesis = new Hypothesis("You should consider expanding your Marketing skills.");
         response.appendExplanation(hypothesis.getDescription());
     }
@@ -77,10 +78,11 @@ end
 rule "Technical skill"
 salience 93
 when
-    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have the technical skills?", value == $ts : value )
+    exists Hypothesis(description == "Considering Frame Team.")
+    Evidence(description == "Do you have the technical skills?", value == $ts : value )
 then
-    double rate = $ts.equals("yes") ? Skills.TECHNICAL_SKILLS : Skills.NO_SKILL;
-    if (rate == Skills.NO_SKILL) {
+    double rate = $ts.equals("yes") ? Score.TECHNICAL_SKILLS : Score.NO_SKILL;
+    if (rate == Score.NO_SKILL) {
         Hypothesis hypothesis = new Hypothesis("You should consider expanding your Technical skills.");
         response.appendExplanation(hypothesis.getDescription());
     }
@@ -90,10 +92,11 @@ end
 rule "Analytical skill"
 salience 92
 when
-    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have the analytical skills?", value == $as : value )
+    exists Hypothesis(description == "Considering Frame Team.")
+    Evidence(description == "Do you have the analytical skills?", value == $as : value )
 then
-    double rate = $as.equals("yes") ? Skills.ANALYTICAL_SKILLS : Skills.NO_SKILL;
-    if (rate == Skills.NO_SKILL) {
+    double rate = $as.equals("yes") ? Score.ANALYTICAL_SKILLS : Score.NO_SKILL;
+    if (rate == Score.NO_SKILL) {
         Hypothesis hypothesis = new Hypothesis("You should consider expanding your Analytical skills.");
         response.appendExplanation(hypothesis.getDescription());
     }
@@ -103,10 +106,11 @@ end
 rule "Experience"
 salience 91
 when
-    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do you have previous experience as a team?", value == $experience : value )
+    exists Hypothesis(description == "Considering Frame Team.")
+    Evidence(description == "Do you have previous experience as a team?", value == $experience : value )
 then
-    double rate = $experience.equals("yes") ? Skills.TEAM_SKILLS : Skills.NO_SKILL;
-    if (rate == Skills.NO_SKILL) {
+    double rate = $experience.equals("yes") ? Score.TEAM_SKILLS : Score.NO_SKILL;
+    if (rate == Score.NO_SKILL) {
         Hypothesis hypothesis = new Hypothesis("You should consider experience in the field a bit more.");
         response.appendExplanation(hypothesis.getDescription());
     }
@@ -116,10 +120,11 @@ end
 rule "Goal"
 salience 90
 when
-    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Are your personal goals aligned with the start-up vision?", value == $goal : value )
+    exists Hypothesis(description == "Considering Frame Team.")
+    Evidence(description == "Are your personal goals aligned with the start-up vision?", value == $goal : value )
 then
-    double rate = $goal.equals("yes") ? Skills.TEAM_SKILLS : Skills.NO_SKILL;
-    if (rate == Skills.NO_SKILL) {
+    double rate = $goal.equals("yes") ? Score.TEAM_SKILLS : Score.NO_SKILL;
+    if (rate == Score.NO_SKILL) {
         Hypothesis hypothesis = new Hypothesis("You should revise if your goals are aligned with company visions.");
         response.appendExplanation(hypothesis.getDescription());
     }
@@ -129,14 +134,93 @@ end
 rule "Expertise"
 salience 89
 when
-    exists Hypothesis(description == "Considering Frame Team.") and Evidence(description == "Do your team or advisors have industry expertise?", value == $expertise : value )
+    exists Hypothesis(description == "Considering Frame Team.")
+    Evidence(description == "Do your team or advisors have industry expertise?", value == $expertise : value )
 then
-    double rate = $expertise.equals("yes") ? Skills.TEAM_SKILLS : Skills.NO_SKILL;
-    if (rate == Skills.NO_SKILL) {
+    double rate = $expertise.equals("yes") ? Score.TEAM_SKILLS : Score.NO_SKILL;
+    if (rate == Score.NO_SKILL) {
         Hypothesis hypothesis = new Hypothesis("You should consider expertise in the field a bit more.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
 end
+//TODO conclusion/hypothesis from FRAME TEAM?
 
-//TODO conclusion from FRAME TEAM?
+
+rule "Product - Product Readiness Level"
+salience 80
+when
+    Evidence(description == "What is your Product Readiness Level?", value == $value : value)
+    exists Hypothesis(description == "Considering Frame Team.")
+then
+    double rate = listener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
+    Hypothesis hypothesis = new Hypothesis("Your actual Product Readiness Level is " + $value + "out of 9.");
+
+    response.appendRate(rate);
+    response.appendExplanation(hypothesis.getDescription());
+end
+
+rule "No competitors"
+salience 77
+when
+    Evidence(description == "Do you have competitors?", value == "no")
+then
+    insertLogical(new Hypothesis("Considering Frame Traction."));
+end
+
+rule "Some competitors"
+salience 75
+when
+    Evidence(description == "Do you have competitors?", value == "yes")
+then
+    insertLogical(new Hypothesis("You need to protect your product/service!"));
+end
+
+rule "Intellectual Property (IP)"
+salience 75
+when
+    exists Hypothesis(description == "You need to protect your product/service!")
+    Evidence(description == "Can you protect your product/service?", value == $value : value)
+then
+    if($value.equals("yes")) {
+        response.appendRate(Score.IP_SCORE);
+        response.appendExplanation(new Hypothesis("You seem to have thoughts about intellectual property protection.").getDescription());
+    } else {
+        response.appendExplanation(new Hypothesis("You should consider intellectual property protection for your product/service.").getDescription());
+    }
+    insertLogical(new Hypothesis("Considering Frame Traction."));
+end
+
+rule "Traction1"
+salience 70
+when
+    exists Hypothesis( description == "Considering Frame Traction.")
+    Evidence(description == "What's the lifetime value of your potential customer?", value == $ltv : value)
+    Evidence(description == "What's the potentional customer acquisition cost?", value == $cac : value)
+then
+    double ltvToCac = listener.parseLtvAndCac(Double.parseDouble($ltv), Double.parseDouble($cac));
+    System.out.println("LTV:CAC " + ltvToCac);
+    insertLogical(new Probability(3 * 0.1, "LTV/CAC probability"));
+end
+
+//rule "Traction2"
+//salience 70
+//when
+//    exists Hypothesis( description == "Considering Frame Traction.")
+//then
+//    response.setRate(1.0);
+//end
+
+rule "Traction"
+@LS1(4.0)
+@LN1(0.25)
+//@LS1([2.0,2.0])
+//@LN1([3.0,2.0])
+salience 65
+when
+    exists Hypothesis( description == "Considering Frame Traction.")
+    $p: Probability (description == "LTV/CAC probability")
+then
+    //$p.updateProbability();
+    listener.getProbabilityRef(Probability.class, "LTV/CAC probability").updateProbability();
+end

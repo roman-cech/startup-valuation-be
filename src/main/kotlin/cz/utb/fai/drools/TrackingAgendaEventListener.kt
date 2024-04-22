@@ -1,8 +1,8 @@
 package cz.utb.fai.drools
 
-import cz.utb.fai.dto.StartupValuationRes
-import cz.utb.fai.dto.type.FrameScore.PRODUCT_SCORE
+import cz.utb.fai.dto.type.Probability
 import cz.utb.fai.dto.type.RuleType
+import org.drools.core.ClassObjectFilter
 import org.kie.api.event.rule.*
 import org.kie.api.runtime.KieSession
 import org.springframework.stereotype.Component
@@ -10,40 +10,41 @@ import java.text.DecimalFormat
 
 @Component
 class TrackingAgendaEventListener : AgendaEventListener {
+    lateinit var kieSession: KieSession
+    lateinit var ruleName: String
+    lateinit var metaData: Map<String, Any>
+    var ruleType: RuleType? = null
+    var activations: MutableList<Any> = mutableListOf()
 
-    private lateinit var kieSession: KieSession
-    private lateinit var ruleName: String
-    private lateinit var metaData: Map<String, Any>
+    fun adjustFrameScore(score: Double, value: String): Double =
+        DecimalFormat("#.##").format((value.toDouble() / 9) * score).toDouble()
 
-    private var ruleType: RuleType? = null
-    private var activations: MutableList<Any> = mutableListOf()
+    fun getLHSProbabilities(): List<Double> = activations.map { it as Probability }.mapNotNull { it.probability }
 
-    fun adjustProductScore(value: String): Double = DecimalFormat("#.##").format((value.toDouble() / 9) * PRODUCT_SCORE.score).toDouble()
-
-    fun updateResponse(res: StartupValuationRes, rate: Double, descriptions: List<String>): StartupValuationRes {
-        // Retrieve existing explanation
-        val existingExplanations = res.explanation
-
-        // Convert the string descriptions to a mutable list
-        val newExplanations = descriptions.toMutableList()
-
-        // If there is an existing explanation list, append the new descriptions to it
-        if (!existingExplanations.isNullOrEmpty()) {
-            newExplanations.addAll(existingExplanations)
-        }
-
-        return StartupValuationRes(
-            res.rate + rate,
-            newExplanations
-        )
+    fun parseLtvAndCac(ltv: Double, cac: Double): Double = when (ltv / cac) {
+        in Double.NEGATIVE_INFINITY..0.0 -> 0.0
+        in 5.00..Double.POSITIVE_INFINITY -> 5.0
+        else -> ltv / cac
     }
 
-    override fun beforeMatchFired(event: BeforeMatchFiredEvent) = with(event) {
-        kieSession = kieRuntime.kieBase.kieSessions.first()
-        activations.addAll(match.objects)
-        ruleName = match.rule.name
-        metaData = match.rule.metaData
-        ruleType = if(metaData.isEmpty()) RuleType.DETERMINISTIC else RuleType.PROBABILISTIC
+    fun getProbabilityRef(c: Class<Probability>, description: String): Probability?  {
+        val facts = kieSession.getObjects(ClassObjectFilter(c::class.java)).filterIsInstance<Probability>()
+        val iterator = facts.iterator()
+        while (iterator.hasNext()) {
+            val fact = iterator.next()
+            if (fact.description == description) {
+                return fact
+            }
+        }
+        return null
+    }
+
+    override fun beforeMatchFired(event: BeforeMatchFiredEvent) {
+        kieSession = event.kieRuntime.kieBase.kieSessions.first()
+        activations.addAll(event.match.objects)
+        ruleName = event.match.rule.name
+        metaData = event.match.rule.metaData
+        ruleType = if (metaData.isEmpty()) RuleType.DETERMINISTIC else RuleType.PROBABILISTIC
 
         println("Before Match Fired")
     }

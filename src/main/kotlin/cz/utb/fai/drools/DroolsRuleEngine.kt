@@ -17,7 +17,7 @@ class DroolsRuleEngine(
         kieContainer.newKieSession().let { kieSession ->
             try {
                 StartupValuationRes().run {
-                    kieSession.addEventListener(TrackingAgendaEventListener())//TODO ? ProcessEventListener, RuleProcessListener
+                    kieSession.addEventListener(TrackingAgendaEventListener())
                     kieSession.setGlobal(DROOLS_RES, this)
                     kieSession.setGlobal(DROOLS_LISTENER, TrackingAgendaEventListener())
                     request.evidences.forEach { evidence -> kieSession.insert(evidence) }
