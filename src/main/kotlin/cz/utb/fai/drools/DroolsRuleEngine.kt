@@ -4,10 +4,10 @@ import cz.utb.fai.dto.StartupValuationReq
 import cz.utb.fai.dto.StartupValuationRes
 import org.kie.api.KieServices
 import org.kie.api.runtime.KieContainer
-import org.kie.api.runtime.KieSession
 import org.springframework.stereotype.Component
 
 private const val DROOLS_RES = "response"
+private const val DROOLS_YES = "YES"
 private const val KIE_BASE = "startup-valuation"
 
 @Component
@@ -20,6 +20,7 @@ class DroolsRuleEngine {
                 StartupValuationRes().run {
                     kieSession.addEventListener(TrackingAgendaEventListener())
                     kieSession.setGlobal(DROOLS_RES, this)
+                    kieSession.setGlobal(DROOLS_YES, "yes")
                     request.evidences.forEach { evidence -> kieSession.insert(evidence) }
                     kieSession.fireAllRules()
                     this

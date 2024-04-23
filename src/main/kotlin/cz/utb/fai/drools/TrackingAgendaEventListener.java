@@ -65,6 +65,16 @@ public class TrackingAgendaEventListener implements AgendaEventListener {
         return (ratio <= 0.0) ? 0.0 : Math.min(ratio, 10.0);
     }
 
+    public static double parseSamToMoney(double sam, double money) {
+        double ratio = (sam / money);
+        return (ratio >= 10) ? 8.0 : 2.0;
+    }
+
+    public static double parseTamToSam(double tam, double sam) {
+        double ratio = tam/sam;
+        return (ratio >= 10) ? 10.0 : 0.0;
+    }
+
     static public Probability getProbabilityRef(Class<?> c, String description) {
         Collection<Probability> facts = (Collection<Probability>) kieSession.getObjects( new ClassObjectFilter(c) );
         for (Probability fact : facts) {
