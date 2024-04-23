@@ -17,7 +17,7 @@ class StartupValuationService(
         droolsRuleEngine.computeValuation(
             StartupValuationReq().apply { this.evidences = req.evidences })
             .let { res ->
-                val openAIResponse = getExplanationService.getExplanation(res.explanation.joinToString())
+                val openAIResponse = getExplanationService.getExplanation(res.explanations.joinToString())
 
                 StartupValuationResponse(
                     rate = res.rate,

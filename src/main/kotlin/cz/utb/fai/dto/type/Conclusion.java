@@ -1,20 +1,16 @@
 package cz.utb.fai.dto.type;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Conclusion {
-    private String description;
-    private Double rate;
+    private Double rate = 0.0;
+    private final List<String> explanations = new ArrayList<>();
 
-    public Conclusion(String description, Double rate) {
-        this.description = description;
-        this.rate = rate;
-    }
+    public Conclusion() {}
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public List<String> getExplanations() {
+        return explanations;
     }
 
     public Double getRate() {
@@ -24,4 +20,12 @@ public class Conclusion {
     public void setRate(Double rate) {
         this.rate = rate;
     }
+
+    // Method to append an explanation to the existing list
+    public void appendExplanation(String newExplanation) {
+        this.explanations.add(newExplanation);
+    }
+
+    // Method to append a rate
+    public void appendRate(Double newRate) { this.rate += newRate; }
 }
