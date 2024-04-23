@@ -25,9 +25,10 @@ import java.util.Collections
 import cz.utb.fai.drools.TrackingAgendaEventListener
 import cz.utb.fai.dto.type.Score
 import cz.utb.fai.dto.type.Conclusion
+import org.kie.api.runtime.rule.Agenda
+import cz.utb.fai.dto.type.Probability
 
 global StartupValuationRes response
-global TrackingAgendaEventListener listener
 
 
 rule "Business Needs - No"
@@ -46,7 +47,7 @@ when
     exists Hypothesis(description == "Your business needs further analysis")
     Evidence(description == "What is your Product Readiness Level?", value == $value : value)
 then
-    double rate = listener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
+    double rate = TrackingAgendaEventListener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
     Conclusion conclusion = new Conclusion("You current success probability is " + rate + " out of 100.", rate);
 
     response.setRate(conclusion.getRate());
@@ -153,7 +154,7 @@ when
     Evidence(description == "What is your Product Readiness Level?", value == $value : value)
     exists Hypothesis(description == "Considering Frame Team.")
 then
-    double rate = listener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
+    double rate = TrackingAgendaEventListener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
     Hypothesis hypothesis = new Hypothesis("Your actual Product Readiness Level is " + $value + "out of 9.");
 
     response.appendRate(rate);
@@ -191,36 +192,69 @@ then
     insertLogical(new Hypothesis("Considering Frame Traction."));
 end
 
-rule "Traction1"
+rule "Traction"
 salience 70
 when
     exists Hypothesis( description == "Considering Frame Traction.")
     Evidence(description == "What's the lifetime value of your potential customer?", value == $ltv : value)
     Evidence(description == "What's the potentional customer acquisition cost?", value == $cac : value)
+
+    Evidence(description == "From 1 to 10, how good is your engagement rate?", value == $interested : value)
 then
-    double ltvToCac = listener.parseLtvAndCac(Double.parseDouble($ltv), Double.parseDouble($cac));
+    double ltvToCac = TrackingAgendaEventListener.parseLtvAndCac(Double.parseDouble($ltv), Double.parseDouble($cac));
     System.out.println("LTV:CAC " + ltvToCac);
-    insertLogical(new Probability(3 * 0.1, "LTV/CAC probability"));
+    insert(new Probability(ltvToCac * 0.1, "P(Traction|LTV:CAC)"));
+    insert(new Probability(Double.parseDouble($interested) * 0.1, "P(Traction|Interested)"));
 end
 
-//rule "Traction2"
-//salience 70
-//when
-//    exists Hypothesis( description == "Considering Frame Traction.")
-//then
-//    response.setRate(1.0);
-//end
-
-rule "Traction"
+rule "P(Traction|LTV:CAC)"
 @LS1(4.0)
 @LN1(0.25)
-//@LS1([2.0,2.0])
-//@LN1([3.0,2.0])
 salience 65
 when
     exists Hypothesis( description == "Considering Frame Traction.")
-    $p: Probability (description == "LTV/CAC probability")
 then
-    //$p.updateProbability();
-    listener.getProbabilityRef(Probability.class, "LTV/CAC probability").updateProbability();
+    Probability p = (Probability) TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Traction|LTV:CAC)");
+    p.updateProbability();
+    System.out.println("LTV/CAC prob "+ p.getProbability());
 end
+
+rule "P(Traction|Interested)"
+@LS1(9.0)
+@LN1(0.11)
+salience 60
+when
+    exists Hypothesis( description == "Considering Frame Traction.")
+then
+    Probability p = (Probability) TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Traction|Interested)");
+    p.updateProbability();
+    System.out.println("Interested prob "+ p.getProbability());
+end
+
+rule "P(Traction|LTV:CAC) * P(Traction|Interested)"
+salience 55
+when
+    exists Hypothesis( description == "Considering Frame Traction.")
+    $LTVtoCAC : Probability( description == "P(Traction|LTV:CAC)")
+    $interested : Probability( description == "P(Traction|Interested)")
+then
+    double probability = $LTVtoCAC.getProbability() * $interested.getProbability();
+    insertLogical(new Probability(probability, "P(Traction|LTV:CAC|Interested)"));
+
+    response.appendRate(probability * Score.TRACTION_SCORE);
+end
+
+//rule "P(Traction|LTV:CAC|Interested)"
+//@LS1(9.0)
+//@LN1(0.67)
+//@LS2(1.5)
+//@LN2(0.11)
+//salience 50
+//when
+//    exists Hypothesis( description == "Considering Frame Traction.")
+//    exists Probability( description == "P(Traction|LTV:CAC|Interested)")
+//then
+//    Probability p = (Probability) TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Traction|LTV:CAC)");
+//    p.updateProbability();
+//    System.out.println("LTV/CAC prob "+ p.getProbability());
+//end

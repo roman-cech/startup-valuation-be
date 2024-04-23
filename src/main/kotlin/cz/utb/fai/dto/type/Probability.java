@@ -34,6 +34,73 @@ public class Probability implements Comparable<Probability>, Uncertainty {
         this.description = description;
     }
 
+
+    @Override
+    public void updateProbability() {
+        Map<String, Double> supportFactors = Collections.emptyMap();
+        double newProbability;
+
+        FactHandle fHandle = TrackingAgendaEventListener.getKieSession().getFactHandle(this);
+
+        List<Double> lhsProbabilities = TrackingAgendaEventListener.getLHSProbabilities();
+
+        if (TrackingAgendaEventListener.getRuleType() == RuleType.PROBABILISTIC) {
+            try {
+                supportFactors = TrackingAgendaEventListener.getMetaData().entrySet().stream()
+                        .filter(entry -> entry.getValue() instanceof Double)
+                        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), (Double) entry.getValue()), HashMap::putAll);
+            } catch (Exception E) {
+                System.exit(0);
+            }
+
+            // adjust LS and LN values
+            double odd = prob2odd(getProbability());
+
+            for (int i = 1; i <= lhsProbabilities.size(); i++) {
+                if (lhsProbabilities.get(i - 1) < 1.0 && lhsProbabilities.get(i - 1) >= 0.5) {
+                    // adjust LSi
+                    supportFactors.put("LS" + i, getAdjustedLS(lhsProbabilities.get(i - 1), supportFactors.get("LS" + i)));
+
+                    odd = odd * supportFactors.get("LS" + i);
+                }
+                if (lhsProbabilities.get(i - 1) >= 0.0 && lhsProbabilities.get(i - 1) < 0.5) {
+                    // adjust LNi
+                    supportFactors.put("LN" + i, getAdjustedLN(lhsProbabilities.get(i - 1), supportFactors.get("LN" + i)));
+
+                    odd = odd * supportFactors.get("LN" + i);
+                }
+            }
+
+            newProbability = odd2prob(odd);
+        } else {
+            newProbability = 1.0;
+            for (int i = 1; i <= lhsProbabilities.size(); i++) {
+                newProbability = newProbability * lhsProbabilities.get(i - 1);
+            }
+        }
+
+        // update conclusion's probability value
+        this.setProbability(newProbability);
+        TrackingAgendaEventListener.getKieSession().update(fHandle, this);
+    }
+
+    private double getAdjustedLS(double prob, double ls) {
+        return (2 * (ls - 1) * prob) + 2 - ls;
+    }
+
+    private double getAdjustedLN(double prob, double ln) {
+        return (2 * (1 - ln) * prob) + ln;
+    }
+
+    //Probability 1.0 can not be substituted, so we are using 99.99 instead by the limits of 1.0 approximated by 0.99...
+    private double prob2odd(double prob) {
+        return prob == 1.0 ? 99.99 : prob / (1 - prob);
+    }
+
+    private double odd2prob(double odd) {
+        return odd / (odd + 1);
+    }
+
     /**
      * Compares this object with the specified object for order.  Returns a
      * negative integer, zero, or a positive integer as this object is less
@@ -67,70 +134,13 @@ public class Probability implements Comparable<Probability>, Uncertainty {
      * inconsistent with equals."
      */
     @Override
-    public int compareTo(Probability p) {
-        if(this.getProbability() < p.getProbability()) {
+    public int compareTo(Probability o) {
+        if (this.getProbability() < o.getProbability()) {
             return -1;
-        }
-        else if(this.getProbability() > p.getProbability()) {
+        } else if (this.getProbability() > o.getProbability()) {
             return 1;
         }
         return 0;
     }
 
-    @Override
-    public void updateProbability() {
-        Map<String, Double> supportFactors = Collections.emptyMap();
-        double newProbability;
-        TrackingAgendaEventListener listener = new TrackingAgendaEventListener();
-
-        FactHandle fHandle = listener.getKieSession().getFactHandle(this);
-
-        List<Double> lhsProbabilities = listener.getLHSProbabilities();
-
-        if (listener.getRuleType() == RuleType.PROBABILISTIC) {
-            try {
-                supportFactors = listener.getMetaData().entrySet().stream()
-                        .filter(entry -> entry.getValue() instanceof Double)
-                        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), (Double) entry.getValue()), HashMap::putAll);
-            } catch(Exception E) { System.exit( 0); }
-
-            // adjust LS and LN values
-            double odd = prob2odd(getProbability());
-
-            for (int i = 1; i <= lhsProbabilities.size(); i++) {
-                if (lhsProbabilities.get(i-1) < 1.0 && lhsProbabilities.get(i-1) >= 0.5) {
-                    // adjust LSi
-                    supportFactors.put("LS" + i, getAdjustedLS(lhsProbabilities.get(i-1), supportFactors.get("LS" + i)));
-
-                    odd = odd * supportFactors.get("LS" + i);
-                }
-                if (lhsProbabilities.get(i-1) >= 0.0 && lhsProbabilities.get(i-1) < 0.5) {
-                    // adjust LNi
-                    supportFactors.put("LN" + i, getAdjustedLN(lhsProbabilities.get(i-1), supportFactors.get("LN" + i)));
-
-                    odd = odd * supportFactors.get("LN" + i);
-                }
-            }
-
-            newProbability = odd2prob(odd);
-        } else {
-            newProbability = 1.0;
-            for (int i = 1; i <= lhsProbabilities.size(); i++) {
-                newProbability = newProbability * lhsProbabilities.get(i-1);
-            }
-        }
-
-        // update conclusion's probability value
-        this.setProbability(newProbability);
-        listener.getKieSession().update(fHandle, this);
-    }
-
-    private double getAdjustedLS(double prob, double ls) { return (2 * (ls-1) * prob) + 2 - ls; }
-
-    private double getAdjustedLN(double prob, double ln) { return (2 * (1 - ln) * prob) + ln; }
-
-    //Probability 1.0 can not be substituted, so we are using 99.99 instead by the limits of 1.0 approximated by 0.99...
-    private double prob2odd(double prob) { return prob == 1.0 ? 99.99 : prob / (1 - prob); }
-
-    private double odd2prob(double odd) { return odd / (odd + 1); }
 }
