@@ -161,7 +161,7 @@ rule "Traction"
 salience 70
 when
     Evidence(description == "What's the lifetime value of your potential customer?", value == $ltv : value)
-    Evidence(description == "What's the potentional customer acquisition cost?", value == $cac : value)
+    Evidence(description == "What's the potential customer acquisition cost?", value == $cac : value)
     Evidence(description == "From 1 to 10, how good is your engagement rate?", value == $interested : value)
 then
     double ltvToCac = TrackingAgendaEventListener.parseLtvAndCac(Double.parseDouble($ltv), Double.parseDouble($cac));

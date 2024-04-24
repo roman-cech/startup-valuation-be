@@ -17,8 +17,8 @@ public class Conclusion {
         return rate;
     }
 
-    public void setRate(Double rate) {
-        this.rate = rate;
+    public void setRate(double rate) {
+        this.rate = Double.parseDouble(String.format("%.2f", rate));
     }
 
     // Method to append an explanation to the existing list
@@ -27,5 +27,7 @@ public class Conclusion {
     }
 
     // Method to append a rate
-    public void appendRate(Double newRate) { this.rate += newRate; }
+    public void appendRate(Double newRate) {
+        this.rate += Double.parseDouble(String.format("%.2f", newRate));
+    }
 }
