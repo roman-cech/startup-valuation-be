@@ -7,11 +7,11 @@ object Score {
     const val TEAM_SKILLS = 5.0
 
     const val PRODUCT_SCORE = 17.0
-    const val IP_SCORE = 5.0
+    const val IP_SCORE = 8.0
 
-    const val TRACTION_SCORE = 15.0
+    const val TRACTION_SCORE = 17.0
     const val INVESTOR_SCORE = 5.0
-    const val OPPORTUNITY_SCORE = 18.0
+    const val OPPORTUNITY_SCORE = 13.0
 
     const val NEGATIVE_SCENARIO = 0.0
 }
