@@ -19,9 +19,6 @@ class StartupValuationService(
             .let { res ->
                 val openAIResponse = getExplanationService.getExplanation(res.explanations.joinToString())
 
-                StartupValuationResponse(
-                    rate = res.rate,
-                    explanation = openAIResponse
-                )
+                StartupValuationResponse(rate = res.rate, explanation = openAIResponse)
             }
 }

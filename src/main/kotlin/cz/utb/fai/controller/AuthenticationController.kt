@@ -42,12 +42,11 @@ class AuthenticationController(
     @ResponseBody
     fun refreshToken(@RequestParam token: String): ResponseEntity<Token> =
         authenticationService.refreshAccessToken(token)?.let { refreshToken ->
-            ResponseEntity.status(HttpStatus.OK).body(refreshToken)
+            ResponseEntity.status(HttpStatus.CREATED).body(refreshToken)
         } ?: ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
 
     @PostMapping("/v1/auth/logout")
     @ResponseBody
     fun logOut(@RequestParam token: String): ResponseEntity<Unit> =
-        authenticationService.logOut(token)?.let { ResponseEntity.noContent().build() } ?: ResponseEntity.badRequest()
-            .build()
+        authenticationService.logOut(token)?.let { ResponseEntity(HttpStatus.NO_CONTENT) } ?: ResponseEntity(HttpStatus.BAD_REQUEST)
 }

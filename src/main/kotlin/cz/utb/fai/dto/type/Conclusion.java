@@ -1,5 +1,6 @@
 package cz.utb.fai.dto.type;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Conclusion {
     }
 
     public void setRate(double rate) {
-        this.rate = Double.parseDouble(String.format("%.2f", rate));
+        this.rate = Double.parseDouble(new DecimalFormat("#.##").format(rate));
     }
 
     // Method to append an explanation to the existing list
@@ -28,6 +29,6 @@ public class Conclusion {
 
     // Method to append a rate
     public void appendRate(Double newRate) {
-        this.rate += Double.parseDouble(String.format("%.2f", newRate));
+        this.rate += Double.parseDouble(new DecimalFormat("#.##").format(newRate));
     }
 }

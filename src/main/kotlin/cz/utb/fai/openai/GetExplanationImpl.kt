@@ -6,7 +6,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.client.RestTemplate
 
 private const val PATH = "/v1/chat/completions"
-private const val TEMPERATURE = 0.5
+private const val TEMPERATURE = 0.2
 
 
 open class GetExplanationImpl(

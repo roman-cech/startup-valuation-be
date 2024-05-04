@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties(prefix = "open-ai")
 class OpenAIProperties {
     lateinit var model: String
-    lateinit var scheme: String
+    lateinit var host: String
     lateinit var key: String
 }

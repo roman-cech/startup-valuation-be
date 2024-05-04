@@ -1,5 +1,6 @@
 package cz.utb.fai.dto;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class StartupValuationRes {
@@ -12,7 +13,7 @@ public class StartupValuationRes {
     }
 
     public Double getRate() {
-        return rate;
+        return Double.parseDouble(new DecimalFormat("#.##").format(rate));
     }
 
     public List<String> getExplanations() {

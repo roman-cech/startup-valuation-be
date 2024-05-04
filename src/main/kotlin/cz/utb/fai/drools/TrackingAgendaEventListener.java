@@ -55,9 +55,10 @@ public class TrackingAgendaEventListener implements AgendaEventListener {
 
         return probabilityList;
     }
-
-    public static double adjustFrameScore(double score, String value) {
-        return Double.parseDouble(new DecimalFormat("#.##").format((Double.parseDouble(value) / 9) * score));
+    public static double adjustProductScore(double score, String value) {
+        double numericValue = Double.parseDouble(value);
+        if (numericValue > 7) return score;
+        else return Double.parseDouble(new DecimalFormat("#.##").format((numericValue / 7) * score));
     }
 
     public static double parseLtvAndCac(double ltv, double cac) {

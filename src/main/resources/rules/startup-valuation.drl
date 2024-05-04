@@ -36,11 +36,12 @@ rule "Business Needs - No"
 salience 100
 when
     Evidence(description == "Do you know what your business needs?", value == "no")
-    Evidence(description == "What is your Product Readiness Level?", value == $value : value)
+    Evidence(description == "What is your Technology Readiness Level?", value == $value : value)
 then
     response.appendExplanation(new Hypothesis("Your business needs further analysis").getDescription());
-    double rate = TrackingAgendaEventListener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
+    double rate = TrackingAgendaEventListener.adjustProductScore(Score.PRODUCT_SCORE, $value);
     response.setRate(rate);
+    response.appendExplanation(new Hypothesis("Your product has a Technology Readiness Level of " + $value + " out of 9.").getDescription());
     response.appendExplanation(new Hypothesis("You current success probability is " + rate + " out of 100.").getDescription());
 end
 
@@ -59,7 +60,7 @@ when
 then
     double rate = $ms.equals(YES) ? Score.MARKETING_SKILLS : Score.NEGATIVE_SCENARIO;
     if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should consider expanding your Marketing skills.");
+        Hypothesis hypothesis = new Hypothesis("Consider expanding your marketing skills.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
@@ -72,7 +73,7 @@ when
 then
     double rate = $ts.equals(YES) ? Score.TECHNICAL_SKILLS : Score.NEGATIVE_SCENARIO;
     if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should consider expanding your Technical skills.");
+        Hypothesis hypothesis = new Hypothesis("Consider expanding your technical skills.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
@@ -85,33 +86,33 @@ when
 then
     double rate = $as.equals(YES) ? Score.ANALYTICAL_SKILLS : Score.NEGATIVE_SCENARIO;
     if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should consider expanding your Analytical skills.");
-        response.appendExplanation(hypothesis.getDescription());
-    }
-    response.appendRate(rate);
-end
-
-rule "Experience"
-salience 91
-when
-    Evidence(description == "Do you have previous experience as a team?", value == $experience : value )
-then
-    double rate = $experience.equals(YES) ? Score.TEAM_SKILLS : Score.NEGATIVE_SCENARIO;
-    if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should consider experience in the field a bit more.");
+        Hypothesis hypothesis = new Hypothesis("Consider expanding your analytical skills.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
 end
 
 rule "Goal"
-salience 90
+salience 91
 when
-    Evidence(description == "Are your personal goals aligned with the start-up vision?", value == $goal : value )
+    Evidence(description == "Does your company have clear goals that align with your team members values?", value == $goal : value )
 then
     double rate = $goal.equals(YES) ? Score.TEAM_SKILLS : Score.NEGATIVE_SCENARIO;
     if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should revise if your goals are aligned with company visions.");
+        Hypothesis hypothesis = new Hypothesis("Consider reassessing whether your goals align with the company's vision.");
+        response.appendExplanation(hypothesis.getDescription());
+    }
+    response.appendRate(rate);
+end
+
+rule "Experience"
+salience 90
+when
+    Evidence(description == "Does your team have previous experience working together?", value == $experience : value )
+then
+    double rate = $experience.equals(YES) ? Score.TEAM_SKILLS : Score.NEGATIVE_SCENARIO;
+    if (rate == Score.NEGATIVE_SCENARIO) {
+        Hypothesis hypothesis = new Hypothesis("Consider hiring a team with previous experience to enhance collaboration and efficiency.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
@@ -120,25 +121,25 @@ end
 rule "Expertise"
 salience 89
 when
-    Evidence(description == "Do your team or advisors have industry expertise?", value == $expertise : value )
+    Evidence(description == "Does your team have insider expertise or external help in the sector of your business?", value == $expertise : value )
 then
     double rate = $expertise.equals(YES) ? Score.TEAM_SKILLS : Score.NEGATIVE_SCENARIO;
     if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should consider expertise in the field a bit more.");
+        Hypothesis hypothesis = new Hypothesis("It may be beneficial to prioritize expertise in the field to enhance your team's capabilities.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
 end
 
 
-rule "Product Readiness Level"
+rule "Product Development"
 salience 80
 when
     Evidence(description == "Do you know what your business needs?", value == "yes")
-    Evidence(description == "What is your Product Readiness Level?", value == $value : value)
+    Evidence(description == "What is your Technology Readiness Level?", value == $value : value)
 then
-    double rate = TrackingAgendaEventListener.adjustFrameScore(Score.PRODUCT_SCORE, $value);
-    Hypothesis hypothesis = new Hypothesis("Your actual Product Readiness Level is " + $value + "out of 9.");
+    double rate = TrackingAgendaEventListener.adjustProductScore(Score.PRODUCT_SCORE, $value);
+    Hypothesis hypothesis = new Hypothesis("Your product has a Technology Readiness Level of " + $value + " out of 9.");
 
     response.appendRate(rate);
     response.appendExplanation(hypothesis.getDescription());
@@ -153,7 +154,7 @@ then
     if($value.equals(YES)) {
         response.appendRate(Score.IP_SCORE);
     } else {
-        response.appendExplanation(new Hypothesis("You should consider intellectual property protection for your product/service.").getDescription());
+        response.appendExplanation(new Hypothesis("Considering intellectual property protection for your product/service could be advantageous.").getDescription());
     }
 end
 
@@ -168,8 +169,8 @@ then
     if (ltvToCac < 3) {
         response.appendExplanation(new Hypothesis("On average you are not generating revenue.").getDescription());
     }
-    insert(new Probability(ltvToCac * 0.1, "P(Traction|LTV:CAC)"));
-    insert(new Probability(Double.parseDouble($interested) * 0.1, "P(Traction|Interested)"));
+    insertLogical(new Probability(ltvToCac * 0.1, "P(Traction|LTV:CAC)"));
+    insertLogical(new Probability(Double.parseDouble($interested) * 0.1, "P(Traction|Interested)"));
 end
 
 rule "P(Traction|LTV:CAC) and P(Traction|Interested)"
@@ -179,8 +180,8 @@ rule "P(Traction|LTV:CAC) and P(Traction|Interested)"
 @LN2(0.11)
 salience 60
 when
-    exists Probability( description == "P(Traction|LTV:CAC)")
-    exists Probability( description == "P(Traction|Interested)")
+    exists Probability(description == "P(Traction|LTV:CAC)")
+    exists Probability(description == "P(Traction|Interested)")
 then
     TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Traction|LTV:CAC)").updateProbability();
     TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Traction|Interested)").updateProbability();
@@ -189,8 +190,8 @@ end
 rule "P(Traction|LTV:CAC|Interested)"
 salience 55
 when
-    $LTVtoCAC : Probability( description == "P(Traction|LTV:CAC)")
-    $interested : Probability( description == "P(Traction|Interested)")
+    $LTVtoCAC : Probability(description == "P(Traction|LTV:CAC)")
+    $interested : Probability(description == "P(Traction|Interested)")
 then
     double probability = $LTVtoCAC.getProbability() * $interested.getProbability();
     response.appendRate(probability * Score.TRACTION_SCORE);
@@ -203,7 +204,7 @@ when
 then
     double rate = $investor.equals(YES) ? Score.INVESTOR_SCORE : Score.NEGATIVE_SCENARIO;
     if (rate == Score.NEGATIVE_SCENARIO) {
-        Hypothesis hypothesis = new Hypothesis("You should consider looking for strategic investor.");
+        Hypothesis hypothesis = new Hypothesis("Considering the potential benefits, you may want to explore opportunities to secure a strategic investor.");
         response.appendExplanation(hypothesis.getDescription());
     }
     response.appendRate(rate);
@@ -216,36 +217,36 @@ when
     Evidence(description == "What’s your TAM within 5 years?", value == $tam : value)
     Evidence(description == "How much money do you need to enter a market?", value == $money : value)
 then
-    double samToMvp = TrackingAgendaEventListener.parseSamToMoney(Double.parseDouble($sam), Double.parseDouble($money));
+    double samToMoney = TrackingAgendaEventListener.parseSamToMoney(Double.parseDouble($sam), Double.parseDouble($money));
     double tamToSam = TrackingAgendaEventListener.parseTamToSam(Double.parseDouble($tam), Double.parseDouble($sam));
-    if (samToMvp < 8) {
+    if (samToMoney < 8) {
         response.appendExplanation(new Hypothesis("Your investment return is expected to yield less than a 10x ROI.").getDescription());
     }
-    insert(new Probability(samToMvp * 0.1, "P(Opportunity|SAM:MVP)"));
-    insert(new Probability(tamToSam * 0.1, "P(Opportunity|TAM:SAM)"));
+    insertLogical(new Probability(samToMoney * 0.1, "P(Opportunity|SAM:Money)"));
+    insertLogical(new Probability(samToMoney * 0.1, "P(Opportunity|TAM:SAM)"));
 end
 
-rule "P(Opportunity|SAM:MVP) and P(Opportunity|TAM:SAM)"
+rule "P(Opportunity|SAM:Money) and P(Opportunity|TAM:SAM)"
 @LS1(9.0)
 @LN1(1.0)
 @LS2(0.67)
 @LN2(0.11)
 salience 25
 when
-    exists Probability( description == "P(Opportunity|SAM:MVP)")
-    exists Probability( description == "P(Opportunity|TAM:SAM)")
+    exists Probability(description == "P(Opportunity|SAM:Money)")
+    exists Probability(description == "P(Opportunity|TAM:SAM)")
 then
-    TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Opportunity|SAM:MVP)").updateProbability();
+    TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Opportunity|SAM:Money)").updateProbability();
     TrackingAgendaEventListener.getProbabilityRef(Probability.class, "P(Opportunity|TAM:SAM)").updateProbability();
 end
 
-rule "P(Opportunity|SAM:MVP|TAM:SAM)"
+rule "P(Opportunity|SAM:Money|TAM:SAM)"
 salience 20
 when
-    $samToMvp : Probability( description == "P(Opportunity|SAM:MVP)")
-    $tamToSam : Probability( description == "P(Opportunity|TAM:SAM)")
+    $samToMoney : Probability(description == "P(Opportunity|SAM:Money)")
+    $tamToSam : Probability(description == "P(Opportunity|TAM:SAM)")
 then
-    double probability = $samToMvp.getProbability() * $tamToSam.getProbability();
+    double probability = $samToMoney.getProbability() * $tamToSam.getProbability();
     response.appendRate(probability * Score.OPPORTUNITY_SCORE);
     response.appendExplanation(new Hypothesis("You current success probability is " + response.getRate() + " out of 100.").getDescription());
 end
