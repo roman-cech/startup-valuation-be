@@ -30,11 +30,11 @@ open class OpenAIRestService(
     }
 
     fun <REQUEST> prepareURI(
-        request: REQUEST,
+        request: REQUEST?,
         path: String,
         httpMethod: HttpMethod,
         queryVariable: Map<String, *> = emptyMap<String, String>()
-    ): Pair<RequestEntity<REQUEST>, URI> {
+    ): Pair<RequestEntity<REQUEST?>, URI> {
         val requestEntity= RequestEntity
             .method(httpMethod, "")
             .accept(MediaType.APPLICATION_JSON)
@@ -44,7 +44,7 @@ open class OpenAIRestService(
         val multiQueryVariables = MultiValueMapAdapter(queryVariable.mapValues { listOf(it.value.toString()) })
 
         val uri = UriComponentsBuilder.newInstance()
-            .scheme(properties.scheme)
+            .scheme(properties.host)
             .path(path)
             .queryParams(multiQueryVariables)
             .build()
